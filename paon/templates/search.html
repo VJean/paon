@@ -1,0 +1,10 @@
+{% include "_searchform.html" %}
+{% if shows %}
+<ul>
+{% for show in shows %}
+<li>({{show.id}}) {{show.name}}</li>
+{% endfor %}
+</ul>
+{% else %}
+<p>Aucun résultat.</p>
+{% endif %}
