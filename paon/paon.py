@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
-import requests
+
+from . import tmdbwrap as tmdb
 
 
 app = Flask(__name__)
@@ -14,15 +15,11 @@ except ImportError:
     pass
 else:
     # custom config loaded
-    pass
+    tmdb.APIKEY = app.config["APIKEY"]
+
 
 # init models database
 db = SQLAlchemy(app)
-
-APIKEY = '353fa1f8f5c71a9822703a5a5d5b8faf'
-LANG = 'fr'
-API_URL = 'https://api.themoviedb.org/3/'
-TV_URL = 'https://api.themoviedb.org/3/tv/{id}'
 
 
 @app.route('/')
@@ -35,13 +32,6 @@ def search():
     search = request.args.get('search', None)
     results = []
     if search:
-        url = API_URL + 'search/tv'
-        payload = {
-            "language": LANG,
-            "api_key": APIKEY,
-            "query": search
-        }
-        req = requests.get(url, params=payload)
-        if req.status_code == 200:
-            results = req.json()['results']
+        s = tmdb.Search()
+        results = s.tvshow(search)
     return render_template('search.html', shows=results, search=search)
