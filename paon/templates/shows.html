@@ -1,0 +1,7 @@
+{% if shows %}
+<ul>
+    {% for show in shows %}<li>{{show.name}}</li>{% endfor %}
+</ul>
+{% else %}
+<p>Aucune série suivie. <a href="{{url_for('search')}}">Ajouter une série</a></p>
+{% endif %}

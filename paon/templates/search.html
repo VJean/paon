@@ -2,9 +2,9 @@
 {% if shows %}
 <ul>
 {% for show in shows %}
-<li>({{show.id}}) {{show.name}}</li>
+<li><a href="{{url_for('add_show', id=show.id)}}">suivre</a> {{show.name}}</li>
 {% endfor %}
 </ul>
-{% else %}
+{% elif search %}
 <p>Aucun résultat.</p>
 {% endif %}
