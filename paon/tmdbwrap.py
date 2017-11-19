@@ -1,8 +1,11 @@
+import logging
 import requests
 
 LANG = 'en'
 APIKEY = None
 APIURL = 'https://api.themoviedb.org/3/'
+
+logger = logging.getLogger(__name__)
 
 
 class Search(object):
@@ -20,6 +23,7 @@ class Search(object):
             "query": query
         }
         req = requests.get(PATH, params=payload)
+        logger.info(f'Search request status code : {req.status_code}')
         if req.status_code == 200:
             return req.json()['results']
         else:

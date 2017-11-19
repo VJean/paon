@@ -8,14 +8,19 @@ from . import tmdbwrap as tmdb
 
 app = Flask(__name__)
 handler = RotatingFileHandler('paon.log', maxBytes=10000, backupCount=1)
-formatter = logging.Formatter("[%(asctime)s][%(levelname)s][%(name)s] %(message)s")
+formatter = logging.Formatter("[%(asctime)s][%(levelname)s]\t[%(name)s]\t %(message)s")
 handler.setLevel(logging.INFO)
 handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.DEBUG)
-log.addHandler(handler)
+wlog = logging.getLogger('werkzeug')
+wlog.setLevel(logging.DEBUG)
+wlog.addHandler(handler)
+
+apilog = logging.getLogger('paon.tmdbwrap')
+apilog.setLevel(logging.INFO)
+apilog.addHandler(handler)
+
 
 # Loading default config
 app.config.from_object('default_config')
@@ -93,7 +98,6 @@ def search():
     search = request.args.get('search', None)
     results = []
     if search:
-        app.logger.info(f"Searching for {search}")
         s = tmdb.Search()
         results = s.tvshow(search)
     return render_template('search.html', shows=results, search=search)
@@ -120,13 +124,21 @@ def add_show():
         flash("Une erreur s'est produite.")
         return redirect(url_for('shows'))
     # create show in db
-    new_show = Show(show['id'], show['name'], show['number_of_seasons'])
+    new_show = Show(
+        show['id'],
+        show['name'],
+        show['number_of_seasons'])
     # fetch seasons
     for season in show['seasons']:
         # avoid season 0 that is usually Specials
         if season['season_number'] == 0:
             continue
-        new_season = Season(season['id'], tmdb_id, season['season_number'], season['episode_count'], tmdb_date_to_date(season['air_date']))
+        new_season = Season(
+            season['id'],
+            tmdb_id,
+            season['season_number'],
+            season['episode_count'],
+            tmdb_date_to_date(season['air_date']))
         # fetch episodes
         for ep_nb in range(season['episode_count']):
             continue
