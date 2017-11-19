@@ -43,3 +43,22 @@ class Tv(object):
             return req.json()
         else:
             return None
+
+
+class Tv_Seasons(object):
+    """docstring for Tv_Seasons"""
+    def __init__(self):
+        super(Tv_Seasons, self).__init__()
+        self.BASEPATH = APIURL + 'tv/'
+
+    def by_id(self, show_id, season_number):
+        PATH = self.BASEPATH + '{0}/season/{1}'.format(show_id, season_number)
+        payload = {
+            "language": LANG,
+            "api_key": APIKEY
+        }
+        req = requests.get(PATH, params=payload)
+        if req.status_code == 200:
+            return req.json()
+        else:
+            return None
