@@ -26,10 +26,26 @@ class Show(db.Model):
     __tablename__ = 'shows'
     tmdb_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256), nullable=False, unique=True)
+    seasons = db.relationship('Season', backref='show')
 
     def __init__(self, tmdb_id, name):
         self.tmdb_id = tmdb_id
         self.name = name
+
+
+class Season(db.Model):
+    """docstring for Season"""
+    __tablename__ = 'seasons'
+    tmdb_id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer, nullable=False)
+    episode_count = db.Column(db.Integer, nullable=False)
+    show_id = db.Column(db.Integer, db.ForeignKey('shows.tmdb_id'), nullable=False)
+
+    def __init__(self, tmdb_id, show_id, number, episode_count):
+        self.tmdb_id = tmdb_id
+        self.show_id = show_id
+        self.number = number
+        self.episode_count = episode_count
 
 
 db.create_all()
@@ -70,6 +86,8 @@ def add_show():
         return redirect(url_for('shows'))
     # create show in db
     new_show = Show(show['id'], show['name'])
+    for season in show['seasons']:
+        new_show.seasons.append(Season(season['id'], tmdb_id, season['season_number'], season['episode_count']))
     db.session.add(new_show)
     db.session.commit()
     # confirm and redirect user
