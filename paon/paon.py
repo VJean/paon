@@ -54,6 +54,23 @@ class Show(db.Model):
         self.name = name
         self.season_count = season_count
 
+    def not_seen(self):
+        not_seen = []
+        for s in self.seasons:
+            not_seen.extend(s.not_seen())
+        return not_seen
+
+    def seen(self):
+        seen = []
+        for s in self.seasons:
+            seen.extend(s.seen())
+        return seen
+
+    def progression(self):
+        not_seen_nb = len(self.not_seen())
+        if not_seen_nb == 0:
+            return 100
+        return len(self.seen()) / not_seen_nb * 100
 
 class Season(db.Model):
     __tablename__ = 'seasons'
@@ -70,6 +87,18 @@ class Season(db.Model):
         self.number = number
         self.episode_count = episode_count
         self.air_date = air_date
+
+    def not_seen(self):
+        return [e for e in self.episodes if not e.watched]
+
+    def seen(self):
+        return [e for e in self.episodes if e.watched]
+
+    def progression(self):
+        not_seen_nb = len(self.not_seen())
+        if not_seen_nb == 0:
+            return 100
+        return len(self.seen()) / not_seen_nb * 100
 
 
 class Episode(db.Model):
