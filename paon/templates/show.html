@@ -1,7 +1,7 @@
 <h1>{{show.name}}</h1>
-{% for s in show.seasons if s.has_aired() %}
+{% for s in show.seasons|sort(attribute='air_date', reverse=True) if s.has_aired() %}
 <h2>Saison {{s.number}}</h2>
-<ul>{% for e in s.episodes if e.has_aired() %}
+<ul>{% for e in s.episodes|sort(attribute='air_date', reverse=True) if e.has_aired() %}
 <li>{{e}} - {{e.air_date}}</li>
 {% endfor %}</ul>
 {% endfor %}
