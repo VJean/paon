@@ -2,7 +2,7 @@
 <ul>
     {% for show in shows %}
         <li>
-            {{show.name}} ({{show.progression()|round|int}}%)
+            <a href="{{url_for('show', show_id=show.tmdb_id)}}">{{show.name}}</a> ({{show.progression()|round|int}}%)
         </li>
     {% endfor %}
 </ul>

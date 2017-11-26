@@ -1,0 +1,7 @@
+<h1>{{show.name}}</h1>
+{% for s in show.seasons %}
+<h2>Saison {{s.number}}</h2>
+<ul>{% for e in s.episodes %}
+<li>{{e}} - {{e.air_date}}</li>
+{% endfor %}</ul>
+{% endfor %}

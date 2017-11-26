@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, abort, render_template, request, redirect, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 import logging
@@ -72,6 +72,7 @@ class Show(db.Model):
             return 100
         return len(self.seen()) / not_seen_nb * 100
 
+
 class Season(db.Model):
     __tablename__ = 'seasons'
     tmdb_id = db.Column(db.Integer, primary_key=True)
@@ -116,6 +117,9 @@ class Episode(db.Model):
         self.number = number
         self.air_date = air_date
 
+    def __repr__(self):
+        return f"S{self.season.number:02d}E{self.number:02d}"
+
 
 db.create_all()
 
@@ -141,12 +145,14 @@ def shows():
     return render_template('shows.html', shows=shows)
 
 
-@app.route('/shows/add', methods=['GET'])
+@app.route('/add', methods=['GET'])
 def add_show():
     # get id and name from request
     tmdb_id = request.args.get('id', None)
-    if id is None:
+    if tmdb_id is None:
         return redirect(url_for('shows'))
+    elif Show.query.get(tmdb_id) is not None:
+        return "Cette série est déjà suivie"
     app.logger.info(f"Getting show {tmdb_id} from tmdb")
     # get show details
     t = tmdb.Tv()
@@ -189,6 +195,14 @@ def add_show():
     # confirm and redirect user
     flash("Ajout effectué")
     return redirect(url_for('shows'))
+
+
+@app.route('/shows/<int:show_id>')
+def show(show_id):
+    show = Show.query.get(show_id)
+    if show is None:
+        abort(404)
+    return render_template('show.html', show=show)
 
 
 def tmdb_date_to_date(str):
