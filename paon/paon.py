@@ -90,7 +90,7 @@ class Season(db.Model):
         self.air_date = air_date
 
     def not_seen(self):
-        return [e for e in self.episodes if not e.watched]
+        return [e for e in self.episodes if (not e.watched) and e.has_aired()]
 
     def seen(self):
         return [e for e in self.episodes if e.watched]
@@ -119,6 +119,9 @@ class Episode(db.Model):
 
     def __repr__(self):
         return f"S{self.season.number:02d}E{self.number:02d}"
+
+    def has_aired(self):
+        return self.air_date <= datetime.date.today()
 
 
 db.create_all()
