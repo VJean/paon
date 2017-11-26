@@ -68,9 +68,10 @@ class Show(db.Model):
 
     def progression(self):
         not_seen_nb = len(self.not_seen())
-        if not_seen_nb == 0:
+        seen_nb = len(self.seen())
+        if not_seen_nb == 0 or seen_nb == not_seen_nb:
             return 100
-        return len(self.seen()) / not_seen_nb * 100
+        return (seen_nb / (seen_nb + not_seen_nb)) * 100
 
 
 class Season(db.Model):
@@ -100,6 +101,9 @@ class Season(db.Model):
         if not_seen_nb == 0:
             return 100
         return len(self.seen()) / not_seen_nb * 100
+
+    def has_aired(self):
+        return self.air_date <= datetime.date.today()
 
 
 class Episode(db.Model):
