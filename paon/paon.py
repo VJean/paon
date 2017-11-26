@@ -6,10 +6,12 @@ from logging.handlers import RotatingFileHandler
 
 from . import tmdbwrap as tmdb
 
+logging.basicConfig(level=logging.DEBUG)
+
 app = Flask(__name__)
 handler = RotatingFileHandler('paon.log', maxBytes=10000, backupCount=1)
 formatter = logging.Formatter("[%(asctime)s][%(levelname)s]\t[%(name)s]\t %(message)s")
-handler.setLevel(logging.INFO)
+handler.setLevel(logging.DEBUG)
 handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 
@@ -75,6 +77,7 @@ class Episode(db.Model):
     tmdb_id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.Integer, nullable=False)
     air_date = db.Column(db.Date, nullable=False)
+    watched = db.Column(db.Boolean, default=False)
     watch_date = db.Column(db.Date)
     season_id = db.Column(db.Integer, db.ForeignKey('seasons.tmdb_id'), nullable=False)
 
@@ -118,6 +121,7 @@ def add_show():
     app.logger.info(f"Getting show {tmdb_id} from tmdb")
     # get show details
     t = tmdb.Tv()
+    ts = tmdb.Tv_Seasons()
     show = t.by_id(tmdb_id)
     if show is None:
         app.logger.warn(f"Got None when searching tmdb for {tmdb_id}")
@@ -139,9 +143,16 @@ def add_show():
             season['season_number'],
             season['episode_count'],
             tmdb_date_to_date(season['air_date']))
+        # get season object
+        season_obj = ts.by_id(show['id'], season['season_number'])
         # fetch episodes
-        for ep_nb in range(season['episode_count']):
-            continue
+        for ep in season_obj['episodes']:
+            new_ep = Episode(
+                ep['id'],
+                season_obj['id'],
+                ep['episode_number'],
+                tmdb_date_to_date(ep['air_date']))
+            new_season.episodes.append(new_ep)
         new_show.seasons.append(new_season)
     db.session.add(new_show)
     db.session.commit()
