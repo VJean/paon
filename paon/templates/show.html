@@ -1,7 +1,17 @@
 <h1>{{show.name}}</h1>
+<form method="get" action="{{url_for('update_show', show_id=show.tmdb_id)}}">
+    Dernier épisode regardé :
+    <select name="ep">
+        <option>{{show.seen() | last or "-- Aucun --"}}</option>
+        {% for e in show.not_seen()|sort(attribute='air_date') %}
+        <option value="{{e.tmdb_id}}">{{e}}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="Mettre à jour">
+</form>
 {% for s in show.seasons|sort(attribute='air_date', reverse=True) if s.has_aired() %}
 <h2>Saison {{s.number}}</h2>
 <ul>{% for e in s.episodes|sort(attribute='air_date', reverse=True) if e.has_aired() %}
-<li>{{e}} - {{e.air_date}}</li>
+<li>{{e}} - {{e.air_date}}{% if e.watched %} watched{% endif %}</li>
 {% endfor %}</ul>
 {% endfor %}

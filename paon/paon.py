@@ -212,6 +212,36 @@ def show(show_id):
     return render_template('show.html', show=show)
 
 
+@app.route('/shows/<int:show_id>/update')
+def update_show(show_id):
+    # get id and name from request
+    show = Show.query.get(show_id)
+    ep_id = request.args.get('ep', None)
+    if ep_id is None:
+        abort(400)
+    episode = Episode.query.get(ep_id)
+    if show is None or episode is None:
+        abort(404)
+
+    # check that episode is part of the show
+    if episode.season.show_id != show_id:
+        abort(400)
+
+    # mark all episodes from beginning as watched
+    mark_as_watched = []
+    season_nb = episode.season.number
+    if season_nb > 1:
+        for s in Season.query.filter(Season.show_id == show_id, Season.number < season_nb).all():
+            mark_as_watched.extend(s.episodes)
+    for ep_current_season in [e for e in episode.season.episodes if e.number <= episode.number]:
+        ep_current_season.watched = True
+    for e in mark_as_watched:
+        e.watched = True
+
+    db.session.commit()
+    return redirect(url_for('show', show_id=show_id))
+
+
 def tmdb_date_to_date(str):
     d = datetime.datetime.strptime(str, '%Y-%m-%d')
     return d.date()
