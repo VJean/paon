@@ -48,6 +48,7 @@ class Show(db.Model):
     name = db.Column(db.String(256), nullable=False, unique=True)
     season_count = db.Column(db.Integer, nullable=False)
     seasons = db.relationship('Season', backref='show')
+    episodes = db.relationship('Episode', backref='show')
 
     def __init__(self, tmdb_id, name, season_count):
         self.tmdb_id = tmdb_id
@@ -114,9 +115,11 @@ class Episode(db.Model):
     watched = db.Column(db.Boolean, default=False)
     watch_date = db.Column(db.Date)
     season_id = db.Column(db.Integer, db.ForeignKey('seasons.tmdb_id'), nullable=False)
+    show_id = db.Column(db.Integer, db.ForeignKey('shows.tmdb_id'), nullable=False)
 
-    def __init__(self, tmdb_id, season_id, number, air_date):
+    def __init__(self, tmdb_id, show_id, season_id, number, air_date):
         self.tmdb_id = tmdb_id
+        self.show_id = show_id
         self.season_id = season_id
         self.number = number
         self.air_date = air_date
@@ -191,6 +194,7 @@ def add_show():
         for ep in season_obj['episodes']:
             new_ep = Episode(
                 ep['id'],
+                tmdb_id,
                 season_obj['id'],
                 ep['episode_number'],
                 tmdb_date_to_date(ep['air_date']))
