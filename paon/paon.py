@@ -75,6 +75,9 @@ class Show(db.Model):
             return 100
         return (seen_nb / (seen_nb + not_seen_nb)) * 100
 
+    def __lt__(self, other):
+        return self.name < other.name
+
 
 class Season(db.Model):
     __tablename__ = 'seasons'
@@ -152,8 +155,12 @@ def search():
 
 @app.route('/shows/', methods=['GET'])
 def shows():
+    # return all followed shows
     shows = Show.query.all()
-    return render_template('shows.html', shows=shows)
+    # return episodes that air during the upcoming week
+    today = datetime.datetime.today()
+    upcoming = Episode.query.filter(Episode.air_date >= today, Episode.air_date <= today + datetime.timedelta(7)).all()
+    return render_template('shows.html', shows=shows, upcoming=upcoming)
 
 
 @app.route('/add', methods=['GET'])

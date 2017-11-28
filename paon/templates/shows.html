@@ -1,4 +1,16 @@
 {% if shows %}
+<h2>Dans les 7 prochains jours</h2>
+    {% for group in upcoming|groupby(attribute='air_date') %}
+    <li>{{group.grouper}}
+    <ul>
+        {% for epgroup, list in group.list|groupby(attribute='show') %}
+        <li>{{epgroup.name}}: {{list|join(', ')}}</li>
+        {% endfor %}
+    </ul>
+    </li>
+    {% endfor %}
+</ul>
+<h2>Progression</h2>
 <ul>
     {% for show in shows|sort(attribute='progression', reverse=True) %}
     <li>
