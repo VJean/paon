@@ -1,9 +1,9 @@
 {% if shows %}
 <ul>
-    {% for show in shows %}
-        <li>
-            <a href="{{url_for('show', show_id=show.tmdb_id)}}">{{show.name}}</a> ({{show.progression()|round|int}}%)
-        </li>
+    {% for show in shows|sort(attribute='progression', reverse=True) %}
+    <li>
+        <a href="{{url_for('show', show_id=show.tmdb_id)}}">{{show.name}}</a> ({{show.progression|round|int}}%)
+    </li>
     {% endfor %}
 </ul>
 {% else %}

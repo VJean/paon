@@ -67,6 +67,7 @@ class Show(db.Model):
             seen.extend(s.seen())
         return seen
 
+    @property
     def progression(self):
         not_seen_nb = len(self.not_seen())
         seen_nb = len(self.seen())
