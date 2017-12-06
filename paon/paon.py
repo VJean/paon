@@ -152,11 +152,6 @@ class Episode(db.Model):
 db.create_all()
 
 
-@app.route('/')
-def home():
-    return render_template('home.html')
-
-
 @app.route('/search/')
 def search():
     search = request.args.get('search', None)
@@ -167,7 +162,7 @@ def search():
     return render_template('search.html', shows=results, search=search)
 
 
-@app.route('/shows/', methods=['GET'])
+@app.route('/', methods=['GET'])
 def shows():
     # return all followed shows
     shows = Show.query.all()
