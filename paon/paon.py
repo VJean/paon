@@ -67,6 +67,20 @@ class Show(db.Model):
             seen.extend(s.seen())
         return seen
 
+    def last_aired(self):
+        e = Episode.query.filter(
+            Episode.show_id == self.tmdb_id,
+            Episode.air_date <= datetime.date.today()
+        ).order_by(Episode.air_date.desc()).first()
+        return e
+
+    def last_seen(self):
+        seen = self.seen()
+        if len(seen) == 0:
+            return None
+        ordered = sorted(seen, key=lambda e: e.air_date, reverse=True)
+        return ordered[0]
+
     @property
     def progression(self):
         not_seen_nb = len(self.not_seen())

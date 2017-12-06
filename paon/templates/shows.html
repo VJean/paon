@@ -11,13 +11,17 @@
     {% endfor %}
 </ul>
 <h2>Progression</h2>
-<ul>
+<table>
+    <tr><th>Série</th><th>Progression</th><th>Dernière parution</th><th>Dernier visionnage</th></tr>
     {% for show in shows|sort(attribute='progression', reverse=True) %}
-    <li>
-        <a href="{{url_for('show', show_id=show.tmdb_id)}}">{{show.name}}</a> ({{show.progression|round|int}}%)
-    </li>
+    <tr>
+        <td><a href="{{url_for('show', show_id=show.tmdb_id)}}">{{show.name}}</a></td>
+        <td>{{show.progression|round|int}}%</td>
+        <td>{% if show.last_aired() %}{{show.last_aired()}}{% else %}-{% endif %}</td>
+        <td>{% if show.last_seen() %}{{show.last_seen()}}{% else %}-{% endif %}</td>
+    </tr>
     {% endfor %}
-</ul>
+</table>
 {% else %}
 <p>Aucune série suivie. <a href="{{url_for('search')}}">Ajouter une série</a></p>
 {% endif %}
