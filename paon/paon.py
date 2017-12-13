@@ -74,14 +74,14 @@ class Show(db.Model):
         e = Episode.query.filter(
             Episode.show_id == self.tmdb_id,
             Episode.air_date <= datetime.date.today()
-        ).order_by(Episode.air_date.desc()).first()
+        ).order_by(Episode.air_date.desc(), Episode.number.desc()).first()
         return e
 
     def last_seen(self):
         seen = self.seen()
         if len(seen) == 0:
             return None
-        ordered = sorted(seen, key=lambda e: e.air_date, reverse=True)
+        ordered = sorted(seen, key=lambda e: (e.air_date, e.number), reverse=True)
         return ordered[0]
 
     @property
