@@ -1,1 +1,1 @@
-from .paon import app
+from .paon import app, update

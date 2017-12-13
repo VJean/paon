@@ -55,6 +55,9 @@ class Show(db.Model):
         self.name = name
         self.season_count = season_count
 
+    def get_season(self, season_number):
+        return Season.query.filter(Season.show_id == self.tmdb_id, Season.number == season_number).first()
+
     def not_seen(self):
         not_seen = []
         for s in self.seasons:
@@ -266,3 +269,62 @@ def update_show(show_id):
 def tmdb_date_to_date(str):
     d = datetime.datetime.strptime(str, '%Y-%m-%d')
     return d.date()
+
+
+def update():
+    myshows = Show.query.all()
+    t = tmdb.Tv()
+    ts = tmdb.Tv_Seasons()
+    for myshow in myshows:
+        show = t.by_id(myshow.tmdb_id)
+        last_aired_date = tmdb_date_to_date(show['last_air_date'])
+        last_local_episode = Episode.query.filter(
+            Episode.show_id == myshow.tmdb_id
+        ).order_by(Episode.air_date.desc()).first()
+        app.logger.info(f"{myshow.name}: local: {last_local_episode.air_date}, most recent: {last_aired_date}")
+        if last_aired_date > last_local_episode.air_date:
+            app.logger.info(f"{myshow.name} needs an update")
+            # get last season
+            mylastseason = myshow.get_season(myshow.season_count)
+            lastseason = ts.by_id(myshow.tmdb_id, myshow.season_count)
+            missing_count = len(lastseason['episodes']) - mylastseason.episode_count
+            for i in range(mylastseason.episode_count, mylastseason.episode_count + missing_count):
+                ep = lastseason['episodes'][i]
+                new_ep = Episode(
+                    ep['id'],
+                    myshow.tmdb_id,
+                    lastseason['id'],
+                    ep['episode_number'],
+                    tmdb_date_to_date(ep['air_date']))
+                mylastseason.episodes.append(new_ep)
+
+            mylastseason.episode_count = len(mylastseason.episodes)
+
+            # are we also missing seasons ?
+            seasons_diff = show['number_of_seasons'] - myshow.season_count
+            if seasons_diff > 0:
+                for new_s in show['seasons']:
+                    if new_s['season_number'] <= mylastseason.number:
+                        continue
+                    new_season = Season(
+                        new_s['id'],
+                        myshow.tmdb_id,
+                        new_s['season_number'],
+                        new_s['episode_count'],
+                        tmdb_date_to_date(new_s['air_date']))
+                    # get season object
+                    season_obj = ts.by_id(myshow.tmdb_id, new_s['season_number'])
+                    # fetch episodes
+                    for ep in season_obj['episodes']:
+                        new_ep = Episode(
+                            ep['id'],
+                            myshow.tmdb_id,
+                            season_obj['id'],
+                            ep['episode_number'],
+                            tmdb_date_to_date(ep['air_date']))
+                        new_season.episodes.append(new_ep)
+                    myshow.seasons.append(new_season)
+                    myshow.season_count = len(myshow.seasons)
+
+            db.session.commit()
+            app.logger.info(f"{myshow.name} is up to date")
