@@ -22,6 +22,9 @@ wlog.addHandler(handler)
 apilog = logging.getLogger('paon.tmdbwrap')
 apilog.setLevel(logging.INFO)
 apilog.addHandler(handler)
+urlliblog = logging.getLogger('urllib3')
+urlliblog.setLevel(logging.WARN)
+urlliblog.addHandler(handler)
 
 
 # Loading default config
@@ -88,7 +91,7 @@ class Show(db.Model):
     def progression(self):
         not_seen_nb = len(self.not_seen())
         seen_nb = len(self.seen())
-        if not_seen_nb == 0 or seen_nb == not_seen_nb:
+        if not_seen_nb == 0:
             return 100
         return (seen_nb / (seen_nb + not_seen_nb)) * 100
 
