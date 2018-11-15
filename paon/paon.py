@@ -50,8 +50,8 @@ class Show(db.Model):
     tmdb_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256), nullable=False, unique=True)
     season_count = db.Column(db.Integer, nullable=False)
-    seasons = db.relationship('Season', backref='show')
-    episodes = db.relationship('Episode', backref='show')
+    seasons = db.relationship('Season', backref='show', lazy='dynamic')
+    episodes = db.relationship('Episode', backref='show', lazy='dynamic')
 
     def __init__(self, tmdb_id, name, season_count):
         self.tmdb_id = tmdb_id
@@ -59,7 +59,7 @@ class Show(db.Model):
         self.season_count = season_count
 
     def get_season(self, season_number):
-        return Season.query.filter(Season.show_id == self.tmdb_id, Season.number == season_number).first()
+        return self.seasons.filter(Season.number == season_number).first()
 
     def not_seen(self):
         not_seen = []
@@ -74,8 +74,7 @@ class Show(db.Model):
         return seen
 
     def last_aired(self):
-        e = Episode.query.filter(
-            Episode.show_id == self.tmdb_id,
+        e = self.episodes.filter(
             Episode.air_date <= datetime.date.today()
         ).order_by(Episode.air_date.desc(), Episode.number.desc()).first()
         return e
@@ -106,7 +105,7 @@ class Season(db.Model):
     air_date = db.Column(db.Date, nullable=False)
     episode_count = db.Column(db.Integer, nullable=False)
     show_id = db.Column(db.Integer, db.ForeignKey('shows.tmdb_id'), nullable=False)
-    episodes = db.relationship('Episode', backref='season')
+    episodes = db.relationship('Episode', backref='season', lazy='dynamic')
 
     def __init__(self, tmdb_id, show_id, number, episode_count, air_date):
         self.tmdb_id = tmdb_id
