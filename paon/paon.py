@@ -5,6 +5,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 from . import tmdbwrap as tmdb
+import paon.utils as utils
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -209,7 +210,7 @@ def add_show():
             tmdb_id,
             season['season_number'],
             season['episode_count'],
-            tmdb_date_to_date(season['air_date']))
+            utils.tmdb_date_to_date(season['air_date']))
         # get season object
         season_obj = ts.by_id(show['id'], season['season_number'])
         # fetch episodes
@@ -219,7 +220,7 @@ def add_show():
                 tmdb_id,
                 season_obj['id'],
                 ep['episode_number'],
-                tmdb_date_to_date(ep['air_date']))
+                utils.tmdb_date_to_date(ep['air_date']))
             new_season.episodes.append(new_ep)
         new_show.seasons.append(new_season)
     db.session.add(new_show)
@@ -268,18 +269,13 @@ def update_show(show_id):
     return redirect(url_for('show', show_id=show_id))
 
 
-def tmdb_date_to_date(str):
-    d = datetime.datetime.strptime(str, '%Y-%m-%d')
-    return d.date()
-
-
 def update():
     myshows = Show.query.all()
     t = tmdb.Tv()
     ts = tmdb.Tv_Seasons()
     for myshow in myshows:
         show = t.by_id(myshow.tmdb_id)
-        last_aired_date = tmdb_date_to_date(show['last_air_date'])
+        last_aired_date = utils.tmdb_date_to_date(show['last_air_date'])
         last_local_episode = Episode.query.filter(
             Episode.show_id == myshow.tmdb_id
         ).order_by(Episode.air_date.desc()).first()
@@ -297,7 +293,7 @@ def update():
                     myshow.tmdb_id,
                     lastseason['id'],
                     ep['episode_number'],
-                    tmdb_date_to_date(ep['air_date']))
+                    utils.tmdb_date_to_date(ep['air_date']))
                 mylastseason.episodes.append(new_ep)
 
             mylastseason.episode_count = len(mylastseason.episodes)
@@ -313,7 +309,7 @@ def update():
                         myshow.tmdb_id,
                         new_s['season_number'],
                         new_s['episode_count'],
-                        tmdb_date_to_date(new_s['air_date']))
+                        utils.tmdb_date_to_date(new_s['air_date']))
                     # get season object
                     season_obj = ts.by_id(myshow.tmdb_id, new_s['season_number'])
                     # fetch episodes
@@ -323,7 +319,7 @@ def update():
                             myshow.tmdb_id,
                             season_obj['id'],
                             ep['episode_number'],
-                            tmdb_date_to_date(ep['air_date']))
+                            utils.tmdb_date_to_date(ep['air_date']))
                         new_season.episodes.append(new_ep)
                     myshow.seasons.append(new_season)
                     myshow.season_count = len(myshow.seasons)
