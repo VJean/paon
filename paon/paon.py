@@ -1,15 +1,14 @@
-from flask import Flask, abort, render_template, request, redirect, flash, url_for
-from flask_sqlalchemy import SQLAlchemy
+from flask import abort, render_template, request, redirect, flash, url_for
 import datetime
 import logging
 from logging.handlers import RotatingFileHandler
 
 from . import tmdbwrap as tmdb
+from . import app, db
 import paon.utils as utils
 
 logging.basicConfig(level=logging.DEBUG)
 
-app = Flask(__name__)
 handler = RotatingFileHandler('paon.log', maxBytes=10000, backupCount=1)
 formatter = logging.Formatter("[%(asctime)s][%(levelname)s]\t[%(name)s]\t %(message)s")
 handler.setLevel(logging.DEBUG)
@@ -40,10 +39,6 @@ else:
     # custom config loaded
     tmdb.APIKEY = app.config["APIKEY"]
     app.logger.info("Loaded custom config from config.py")
-
-
-# init models database
-db = SQLAlchemy(app)
 
 
 class Show(db.Model):
