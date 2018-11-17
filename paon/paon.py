@@ -155,16 +155,16 @@ db.create_all()
 
 @app.route('/search/')
 def search():
-    search = request.args.get('search', None)
+    search_str = request.args.get('search', None)
     results = []
-    if search:
+    if search_str:
         s = tmdb.Search()
-        results = s.tvshow(search)
-    return render_template('search.html', shows=results, search=search)
+        results = s.tvshow(search_str)
+    return render_template('search.html', shows=results, search=search_str)
 
 
 @app.route('/', methods=['GET'])
-def shows():
+def get_shows():
     # return all followed shows
     shows = Show.query.all()
     # return episodes that air during the upcoming week
@@ -184,7 +184,7 @@ def add_show():
     app.logger.info(f"Getting show {tmdb_id} from tmdb")
     # get show details
     t = tmdb.Tv()
-    ts = tmdb.Tv_Seasons()
+    ts = tmdb.TvSeasons()
     show = t.by_id(tmdb_id)
     if show is None:
         app.logger.warn(f"Got None when searching tmdb for {tmdb_id}")
@@ -267,7 +267,7 @@ def update_show(show_id):
 def update():
     myshows = Show.query.all()
     t = tmdb.Tv()
-    ts = tmdb.Tv_Seasons()
+    ts = tmdb.TvSeasons()
     for myshow in myshows:
         show = t.by_id(myshow.tmdb_id)
         last_aired_date = utils.tmdb_date_to_date(show['last_air_date'])
