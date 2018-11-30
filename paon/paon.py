@@ -26,7 +26,6 @@ urlliblog = logging.getLogger('urllib3')
 urlliblog.setLevel(logging.WARN)
 urlliblog.addHandler(handler)
 
-
 # Loading default config
 app.config.from_object('default_config')
 try:
@@ -50,8 +49,8 @@ class Show(db.Model):
     tmdb_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256), nullable=False, unique=True)
     season_count = db.Column(db.Integer, nullable=False)
-    seasons = db.relationship('Season', backref='show', lazy='dynamic')
-    episodes = db.relationship('Episode', backref='show', lazy='dynamic')
+    seasons = db.relationship('Season', backref='show', lazy='dynamic', cascade="all, delete-orphan")
+    episodes = db.relationship('Episode', backref='show', lazy='dynamic', cascade="all, delete-orphan")
 
     def __init__(self, tmdb_id, name, season_count):
         self.tmdb_id = tmdb_id
@@ -105,7 +104,7 @@ class Season(db.Model):
     air_date = db.Column(db.Date, nullable=False)
     episode_count = db.Column(db.Integer, nullable=False)
     show_id = db.Column(db.Integer, db.ForeignKey('shows.tmdb_id'), nullable=False)
-    episodes = db.relationship('Episode', backref='season', lazy='dynamic')
+    episodes = db.relationship('Episode', backref='season', lazy='dynamic', cascade="all, delete-orphan")
 
     def __init__(self, tmdb_id, show_id, number, episode_count, air_date):
         self.tmdb_id = tmdb_id
@@ -268,9 +267,15 @@ def update_show(show_id):
     return redirect(url_for('show', show_id=show_id))
 
 
-def tmdb_date_to_date(str):
-    d = datetime.datetime.strptime(str, '%Y-%m-%d')
-    return d.date()
+def remove_show(show_id):
+    """
+    Delete a show from the database.
+    The deletion process will also delete related seasons and episodes.
+    """
+    try:
+        Show.query.get(show_id).delete()
+    finally:
+        return
 
 
 def update():
