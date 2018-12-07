@@ -143,7 +143,7 @@ def add_show():
     # get id and name from request
     tmdb_id = request.args.get('id', None)
     if tmdb_id is None:
-        return redirect(url_for('shows'))
+        return redirect(url_for('get_shows'))
     elif Show.query.get(tmdb_id) is not None:
         return "Cette série est déjà suivie"
     app.logger.info(f"Getting show {tmdb_id} from tmdb")
@@ -154,7 +154,7 @@ def add_show():
     if show is None:
         app.logger.warn(f"Got None when searching tmdb for {tmdb_id}")
         flash("Une erreur s'est produite.")
-        return redirect(url_for('shows'))
+        return redirect(url_for('get_shows'))
     # create show in db
     new_show = Show(
         show['id'],
@@ -188,7 +188,7 @@ def add_show():
     app.logger.info(f"Added show {tmdb_id} ({new_show.name}) to database")
     # confirm and redirect user
     flash("Ajout effectué")
-    return redirect(url_for('shows'))
+    return redirect(url_for('get_shows'))
 
 
 @app.route('/shows/<int:show_id>')
