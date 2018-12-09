@@ -8,16 +8,6 @@ import paon.utils as utils
 from paon.models import Show, Season, Episode
 
 
-@app.route('/search/')
-def search():
-    search_str = request.args.get('search', None)
-    results = []
-    if search_str:
-        s = tmdb.Search()
-        results = s.tvshow(search_str)
-    return render_template('search.html', shows=results, search=search_str)
-
-
 @app.route('/', methods=['GET'])
 def get_shows():
     # return all followed shows
@@ -26,6 +16,24 @@ def get_shows():
     today = datetime.datetime.today()
     upcoming = Episode.query.filter(Episode.air_date >= today, Episode.air_date <= today + datetime.timedelta(7)).all()
     return render_template('shows.html', shows=shows, upcoming=upcoming)
+
+
+@app.route('/shows/<int:show_id>')
+def show(show_id):
+    show = Show.query.get(show_id)
+    if show is None:
+        abort(404)
+    return render_template('show.html', show=show)
+
+
+@app.route('/search/')
+def search():
+    search_str = request.args.get('search', None)
+    results = []
+    if search_str:
+        s = tmdb.Search()
+        results = s.tvshow(search_str)
+    return render_template('search.html', shows=results, search=search_str)
 
 
 @app.route('/add', methods=['GET'])
@@ -79,14 +87,6 @@ def add_show():
     # confirm and redirect user
     flash("Ajout effectué")
     return redirect(url_for('get_shows'))
-
-
-@app.route('/shows/<int:show_id>')
-def show(show_id):
-    show = Show.query.get(show_id)
-    if show is None:
-        abort(404)
-    return render_template('show.html', show=show)
 
 
 @app.route('/shows/<int:show_id>/update')
