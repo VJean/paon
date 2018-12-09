@@ -5,10 +5,7 @@ from logging.handlers import RotatingFileHandler
 import paon.tmdbwrap as tmdb
 
 
-def create_app():
-    # The main Flask app object
-    app = Flask(__name__)
-
+def config_app(flask_app):
     # logging config
     logging.basicConfig(level=logging.DEBUG)
 
@@ -16,7 +13,7 @@ def create_app():
     formatter = logging.Formatter("[%(asctime)s][%(levelname)s]\t[%(name)s]\t %(message)s")
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(formatter)
-    app.logger.addHandler(handler)
+    flask_app.logger.addHandler(handler)
 
     wlog = logging.getLogger('werkzeug')
     wlog.setLevel(logging.DEBUG)
@@ -30,30 +27,32 @@ def create_app():
     urlliblog.addHandler(handler)
 
     # Loading default config
-    app.config.from_object('default_config')
+    flask_app.config.from_object('default_config')
     try:
-        app.config.from_object('config')
+        flask_app.config.from_object('config')
     except ImportError:
         # No custom config found
-        app.logger.warn("No custom config found (was searching for config.py)")
+        flask_app.logger.warn("No custom config found (was searching for config.py)")
         pass
     else:
         # custom config loaded
-        tmdb.APIKEY = app.config["APIKEY"]
-        app.logger.info("Loaded custom config from config.py")
-
-    return app
+        tmdb.APIKEY = flask_app.config["APIKEY"]
+        flask_app.logger.info("Loaded custom config from config.py")
 
 
 def create_db(flask_app):
-    db = SQLAlchemy(flask_app)
+    return SQLAlchemy(flask_app)
+
+
+def init_db(database):
     from paon.models import Show, Season, Episode
-    db.create_all()
-    return db
+    database.create_all()
 
 
-app = create_app()
+# The main Flask app object
+app = Flask(__name__)
+config_app(app)
 db = create_db(app)
-
+init_db(db)
 
 import paon.paon

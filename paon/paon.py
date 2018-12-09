@@ -7,8 +7,6 @@ from paon import app, db
 import paon.utils as utils
 from paon.models import Show, Season, Episode
 
-db.create_all()
-
 
 @app.route('/search/')
 def search():
