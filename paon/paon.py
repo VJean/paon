@@ -1,5 +1,6 @@
 from flask import abort, render_template, request, redirect, flash, url_for
 import datetime
+import click
 
 import paon.tmdbwrap as tmdb
 from paon import app, db
@@ -229,17 +230,23 @@ def update_show(show_id):
     return redirect(url_for('show', show_id=show_id))
 
 
+@app.cli.command()
+@click.argument("show_id", type=click.INT)
 def remove_show(show_id):
     """
     Delete a show from the database.
     The deletion process will also delete related seasons and episodes.
     """
-    try:
-        Show.query.get(show_id).delete()
-    finally:
+    show = Show.query.get(show_id)
+    if show is None:
+        app.logger.error(f"Didn't find show with id {show_id} in database.")
         return
+    app.logger.info(f"deleting {show.name}")
+    db.session.delete(show)
+    db.session.commit()
 
 
+@app.cli.command()
 def update():
     myshows = Show.query.all()
     t = tmdb.Tv()
