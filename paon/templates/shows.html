@@ -23,5 +23,6 @@
     {% endfor %}
 </table>
 {% else %}
-<p>Aucune série suivie. <a href="{{url_for('search')}}">Ajouter une série</a></p>
+<p>Aucune série suivie.</p>
 {% endif %}
+<p><a href="{{url_for('search')}}">Ajouter une série</a></p>
