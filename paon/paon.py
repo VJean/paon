@@ -119,9 +119,20 @@ def update_show(show_id):
     return redirect(url_for('show', show_id=show_id))
 
 
+@app.route('/shows/<int:show_id>/remove')
+def remove_show(show_id):
+    if not _do_remove(show_id):
+        flash("Une erreur s'est produite.")
+    return redirect(url_for('get_shows'))
+
+
 @app.cli.command()
 @click.argument("show_id", type=click.INT)
-def remove_show(show_id):
+def remove_cmd(show_id):
+    _do_remove(show_id)
+
+
+def _do_remove(show_id):
     """
     Delete a show from the database.
     The deletion process will also delete related seasons and episodes.
@@ -129,10 +140,11 @@ def remove_show(show_id):
     show = Show.query.get(show_id)
     if show is None:
         app.logger.error(f"Didn't find show with id {show_id} in database.")
-        return
+        return False
     app.logger.info(f"deleting {show.name}")
     db.session.delete(show)
     db.session.commit()
+    return True
 
 
 @app.cli.command()
