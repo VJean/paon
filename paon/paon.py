@@ -1,7 +1,6 @@
 from flask import abort, render_template, request, redirect, flash, url_for
 import datetime
 import click
-
 import paon.tmdbwrap as tmdb
 from paon import app, db
 import paon.utils as utils
@@ -10,6 +9,9 @@ from paon.models import Show, Season, Episode
 
 @app.route('/', methods=['GET'])
 def get_shows():
+    """
+    Defines a view that lists all the followed shows, and the episodes that will air in the 7 days to come.
+    """
     # return all followed shows
     shows = Show.query.all()
     # return episodes that air during the upcoming week
@@ -20,6 +22,12 @@ def get_shows():
 
 @app.route('/shows/<int:show_id>')
 def show(show_id):
+    """
+    Defines a view that displays details for a given show.
+    Aborts to a 404 Not Found page if the show doesn't exist.
+
+    :param show_id: the id of the show
+    """
     show = Show.query.get(show_id)
     if show is None:
         abort(404)
