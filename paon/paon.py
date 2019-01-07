@@ -119,6 +119,23 @@ def update_show(show_id):
     return redirect(url_for('show', show_id=show_id))
 
 
+@app.route('/shows/<int:show_id>/reset')
+def reset_show(show_id):
+    """
+    Mark all episodes as not watched
+    :param show_id:
+    """
+    show = Show.query.get(show_id)
+    if show is None:
+        app.logger.error(f"Didn't find show with id {show_id} in database.")
+        abort(404)
+    for episode in show.episodes:
+        episode.watched = False
+
+    db.session.commit()
+    return redirect(url_for('show', show_id=show_id))
+
+
 @app.route('/shows/<int:show_id>/remove')
 def remove_show(show_id):
     if not _do_remove(show_id):

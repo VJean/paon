@@ -9,6 +9,9 @@
     </select>
     <input type="submit" value="Mettre à jour">
 </form>
+<form method="get" action="{{url_for('reset_show', show_id=show.tmdb_id)}}">
+    <input type="submit" value="Réinitialiser">
+</form>
 {% for s in show.seasons|sort(attribute='number', reverse=True) if s.has_aired() %}
 <h2>Saison {{s.number}}</h2>
 <ul>{% for e in s.episodes|sort(attribute='number', reverse=True) if e.has_aired() %}
